@@ -1,138 +1,181 @@
 'use client'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useRouter } from 'next/navigation'
+import PhoneInput, { parsePhoneNumber } from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 const schema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Valid email required'),
-  country: z.string().min(2, 'Country is required'),
-  whatsapp: z.string().min(6, 'WhatsApp is required'),
+  phone: z.string().min(6, 'Phone is required'),
   timeline: z.string().min(1, 'Please select an option'),
+  interest: z.string().min(1, 'Please select an option'),
   message: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
 
 export default function LeadFormSection() {
-  const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema)
   })
 
   const onSubmit = async (data: FormData) => {
     setLoading(true)
+    setError('')
     try {
+      const parsed = parsePhoneNumber(data.phone)
+      const country = parsed?.country || 'Unknown'
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          country,
+          whatsapp: data.phone,
+          timeline: data.timeline,
+          message: `Interest: ${data.interest}. ${data.message || ''}`,
+        }),
       })
-      if (res.ok) setSubmitted(true)
-    } catch (e) {
-      console.error(e)
+      if (res.ok) router.push('/thank-you')
+      else setError('Something went wrong. Please try again.')
+    } catch {
+      setError('Something went wrong. Please try again.')
     }
     setLoading(false)
   }
 
   return (
-    <section id="contact" className="py-24 px-6 bg-[#FAF7F2]">
+    <section id="contact" className="py-32 px-6 bg-[#2F4F3E]">
       <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-12">
-          <p className="text-[#B8924A] text-sm tracking-[0.3em] uppercase mb-4">Get Started</p>
-          <h2 className="font-serif text-4xl text-[#2D3B2A] mb-4">
-            Where Do You See Yourself?
-          </h2>
-          <p className="text-[#4A5E45]">
-            Tell us about yourself and we will send you our free Colombia Living Guide.
+        <div className="text-center mb-16">
+          <p className="text-[#B8924A] text-xs tracking-[0.4em] uppercase mb-6">Get In Touch</p>
+          <h2 className="font-serif text-5xl text-white mb-6">Request Property Information</h2>
+          <p className="text-white/50">
+            Fill out the form and our team will reach out within 24 hours.
           </p>
         </div>
 
-        {submitted ? (
-          <div className="text-center py-16">
-            <p className="text-5xl mb-6">🌿</p>
-            <h3 className="font-serif text-3xl text-[#2D3B2A] mb-4">Your guide is on its way.</h3>
-            <p className="text-[#4A5E45] mb-8">Check your email in the next few minutes.</p>
-            <a
-              href="https://wa.me/573001234567"
-              target="_blank"
-              className="bg-[#2D3B2A] text-white px-8 py-4 rounded-full text-sm hover:bg-[#4A5E45] transition-all duration-300"
-            >
-              Chat with us on WhatsApp
-            </a>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div>
+            <input
+              {...register('name')}
+              placeholder="Your full name"
+              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all"
+            />
+            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
           </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <input
-                {...register('name')}
-                placeholder="Your full name"
-                className="w-full px-5 py-4 rounded-xl border border-[#E8DFD0] bg-white text-[#2D3B2A] focus:outline-none focus:border-[#B8924A] transition-all"
-              />
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
-            </div>
-            <div>
-              <input
-                {...register('email')}
-                placeholder="Your email"
-                type="email"
-                className="w-full px-5 py-4 rounded-xl border border-[#E8DFD0] bg-white text-[#2D3B2A] focus:outline-none focus:border-[#B8924A] transition-all"
-              />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-            </div>
-            <div>
-              <input
-                {...register('country')}
-                placeholder="Your country"
-                className="w-full px-5 py-4 rounded-xl border border-[#E8DFD0] bg-white text-[#2D3B2A] focus:outline-none focus:border-[#B8924A] transition-all"
-              />
-              {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country.message}</p>}
-            </div>
-            <div>
-              <input
-                {...register('whatsapp')}
-                placeholder="WhatsApp number with country code"
-                className="w-full px-5 py-4 rounded-xl border border-[#E8DFD0] bg-white text-[#2D3B2A] focus:outline-none focus:border-[#B8924A] transition-all"
-              />
-              {errors.whatsapp && <p className="text-red-500 text-xs mt-1">{errors.whatsapp.message}</p>}
-            </div>
-            <div>
-              <select
-                {...register('timeline')}
-                className="w-full px-5 py-4 rounded-xl border border-[#E8DFD0] bg-white text-[#2D3B2A] focus:outline-none focus:border-[#B8924A] transition-all"
-              >
-                <option value="">What is your timeline for Colombia?</option>
-                <option value="exploring">Just exploring ideas</option>
-                <option value="12months">Within the next 12 months</option>
-                <option value="6months">Within the next 3-6 months</option>
-                <option value="now">I am ready to take action now</option>
-              </select>
-              {errors.timeline && <p className="text-red-500 text-xs mt-1">{errors.timeline.message}</p>}
-            </div>
-            <div>
-              <textarea
-                {...register('message')}
-                placeholder="What does your ideal life in Colombia look like? (optional)"
-                rows={4}
-                className="w-full px-5 py-4 rounded-xl border border-[#E8DFD0] bg-white text-[#2D3B2A] focus:outline-none focus:border-[#B8924A] transition-all resize-none"
-              />
-            </div>
+          <div>
+            <input
+              {...register('email')}
+              type="email"
+              placeholder="Your email address"
+              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all"
+            />
+            {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+          </div>
+          <div className="border-b border-white/20 pb-1">
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field }) => (
+                <PhoneInput
+                  {...field}
+                  international
+                  defaultCountry="US"
+                  placeholder="Your WhatsApp number"
+                  className="phone-input-dark"
+                />
+              )}
+            />
+            {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone.message}</p>}
+          </div>
+          <div>
+            <select
+              {...register('interest')}
+              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white focus:outline-none focus:border-[#B8924A] transition-all"
+            >
+              <option value="" className="bg-[#2F4F3E]">Reason for interest</option>
+              <option value="retirement" className="bg-[#2F4F3E]">Retirement home</option>
+              <option value="vacation" className="bg-[#2F4F3E]">Vacation property</option>
+              <option value="investment" className="bg-[#2F4F3E]">Investment</option>
+              <option value="relocation" className="bg-[#2F4F3E]">Permanent relocation</option>
+              <option value="other" className="bg-[#2F4F3E]">Other</option>
+            </select>
+            {errors.interest && <p className="text-red-400 text-xs mt-1">{errors.interest.message}</p>}
+          </div>
+          <div>
+            <select
+              {...register('timeline')}
+              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white focus:outline-none focus:border-[#B8924A] transition-all"
+            >
+              <option value="" className="bg-[#2F4F3E]">Your timeline</option>
+              <option value="exploring" className="bg-[#2F4F3E]">Just exploring</option>
+              <option value="12months" className="bg-[#2F4F3E]">Within 12 months</option>
+              <option value="6months" className="bg-[#2F4F3E]">Within 6 months</option>
+              <option value="now" className="bg-[#2F4F3E]">Ready to act now</option>
+            </select>
+            {errors.timeline && <p className="text-red-400 text-xs mt-1">{errors.timeline.message}</p>}
+          </div>
+          <div>
+            <textarea
+              {...register('message')}
+              placeholder="Any questions or comments? (optional)"
+              rows={3}
+              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all resize-none"
+            />
+          </div>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+          <div className="pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#B8924A] text-white py-4 rounded-full text-sm tracking-wide hover:bg-[#D4A96A] transition-all duration-300 disabled:opacity-60"
+              className="w-full bg-[#B8924A] text-white py-4 text-sm tracking-widest uppercase hover:bg-[#D4A96A] transition-all duration-300 disabled:opacity-60"
             >
-              {loading ? 'Sending...' : 'Send Me the Free Guide'}
+              {loading ? 'Sending...' : 'Request Information'}
             </button>
-            <p className="text-center text-xs text-[#4A5E45] opacity-60">
-              No spam. No pressure. Just real information.
-            </p>
-          </form>
-        )}
+          </div>
+          <p className="text-center text-xs text-white/30">
+            No spam. No pressure. We will reach out personally.
+          </p>
+        </form>
       </div>
+
+      <style jsx global>{`
+        .phone-input-dark {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 16px 0;
+        }
+        .phone-input-dark .PhoneInputCountrySelect {
+          background: transparent;
+          border: none;
+          color: white;
+          font-size: 14px;
+          cursor: pointer;
+          outline: none;
+        }
+        .phone-input-dark .PhoneInputInput {
+          background: transparent;
+          border: none;
+          color: white;
+          font-size: 14px;
+          outline: none;
+          width: 100%;
+        }
+        .phone-input-dark .PhoneInputInput::placeholder {
+          color: rgba(255,255,255,0.3);
+        }
+      `}</style>
     </section>
   )
 }

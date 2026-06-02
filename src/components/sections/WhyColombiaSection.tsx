@@ -1,68 +1,32 @@
-'use client'
-import { motion } from 'framer-motion'
-
 const reasons = [
-  {
-    title: 'Eternal Spring',
-    desc: 'Medellín averages 72°F year-round. No winters. No heating bills. Just perfect weather, every day.',
-  },
-  {
-    title: 'Half the Cost',
-    desc: 'Live a premium lifestyle for $1,500–$2,500/month. Your dollar goes twice as far here.',
-  },
-  {
-    title: 'Nature Everywhere',
-    desc: 'Coffee mountains, Caribbean beaches, and lush rainforests — all within a few hours.',
-  },
-  {
-    title: 'Thriving Expat Community',
-    desc: 'Thousands of Americans and Europeans already call Colombia home. You are not alone.',
-  },
-  {
-    title: 'Easy to Reach',
-    desc: '3 hours from Miami. Direct flights from NYC, Madrid, and Amsterdam.',
-  },
-  {
-    title: 'Welcoming Visa Options',
-    desc: 'Digital nomad visa, pensionado visa, and investor residency — all designed for you.',
-  },
+  { num: '01', title: 'Safe Property Rights', desc: 'Foreigners can legally own property in Colombia with the same rights as citizens. No restrictions.' },
+  { num: '02', title: 'Perfect Climate', desc: 'Valle del Cauca enjoys warm, stable temperatures year-round. No seasons. No extremes.' },
+  { num: '03', title: 'Cost of Living', desc: 'Live exceptionally well for a fraction of what it costs in the US or Europe.' },
+  { num: '04', title: 'Warm Hospitality', desc: 'Colombians are known worldwide for their warmth and genuine welcome of foreigners.' },
+  { num: '05', title: 'Easy Access', desc: 'Cali Airport connects directly to Miami, Bogotá, and major international hubs.' },
+  { num: '06', title: 'Growing Interest', desc: 'Thousands of Americans and Europeans are already discovering Colombia as their forever home.' },
 ]
 
 export default function WhyColombiaSection() {
   return (
-    <section id="why" className="py-32 px-6 bg-[#FAF7F2]">
+    <section className="py-32 px-6 bg-[#2F4F3E]">
       <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
-        >
+        <div className="text-center mb-20">
           <p className="text-[#B8924A] text-xs tracking-[0.4em] uppercase mb-6">Why Colombia</p>
-          <h2 className="font-serif text-5xl md:text-6xl text-[#2D3B2A] mb-6">
-            The World's Best Kept Secret
+          <h2 className="font-serif text-5xl md:text-6xl text-white mb-6">
+            A Country Ready<br />for Your Next Chapter
           </h2>
-          <p className="text-[#4A5E45] text-lg max-w-2xl mx-auto leading-relaxed">
-            Colombia has transformed. What you have heard does not match what is here today — 
-            and the people who have made the move never looked back.
+          <p className="text-white/50 text-lg max-w-2xl mx-auto">
+            Colombia has transformed. The people who have made the move never looked back.
           </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E8DFD0]">
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10">
           {reasons.map((r, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="bg-[#FAF7F2] p-10 hover:bg-white transition-colors duration-300"
-            >
-              <span className="text-[#B8924A] font-serif text-4xl font-light">0{i + 1}</span>
-              <h3 className="font-serif text-xl text-[#2D3B2A] mt-4 mb-3">{r.title}</h3>
-              <p className="text-[#4A5E45] text-sm leading-relaxed">{r.desc}</p>
-            </motion.div>
+            <div key={i} className="bg-[#2F4F3E] p-10 hover:bg-[#3a6050] transition-colors duration-300">
+              <span className="text-[#B8924A] font-serif text-3xl">{r.num}</span>
+              <h3 className="font-serif text-xl text-white mt-4 mb-3">{r.title}</h3>
+              <p className="text-white/50 text-sm leading-relaxed">{r.desc}</p>
+            </div>
           ))}
         </div>
       </div>

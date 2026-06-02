@@ -9,3 +9,11 @@
 [style*="opacity: 0"] {
   opacity: 1 !important;
 }
+.PhoneInputCountrySelect option {
+  background-color: #2F4F3E;
+  color: white;
+}
+
+.PhoneInputCountrySelectArrow {
+  color: rgba(255,255,255,0.6);
+}
