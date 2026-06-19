@@ -2,51 +2,40 @@
 import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import PhoneInput, { parsePhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
+import { leadSchema, type LeadFormData } from '@/lib/validations/lead'
 
-const schema = z.object({
-  name: z.string().min(2, 'Name is required'),
-  email: z.string().email('Valid email required'),
-  phone: z.string().min(6, 'Phone is required'),
-  timeline: z.string().min(1, 'Please select an option'),
-  interest: z.string().min(1, 'Please select an option'),
-  message: z.string().optional(),
-})
-
-type FormData = z.infer<typeof schema>
+const inputClass = "w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all text-sm"
+const selectClass = "w-full px-0 py-4 border-b border-white/20 bg-transparent text-white focus:outline-none focus:border-[#B8924A] transition-all text-sm"
+const errorClass = "text-red-400 text-xs mt-1"
 
 export default function LeadFormSection() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema)
+  const { register, handleSubmit, control, formState: { errors } } = useForm<LeadFormData>({
+    resolver: zodResolver(leadSchema)
   })
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: LeadFormData) => {
     setLoading(true)
     setError('')
     try {
-      const parsed = parsePhoneNumber(data.phone)
+      const parsed = parsePhoneNumber(data.whatsapp)
       const country = parsed?.country || 'Unknown'
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          country,
-          whatsapp: data.phone,
-          timeline: data.timeline,
-          message: `Interest: ${data.interest}. ${data.message || ''}`,
-        }),
+        body: JSON.stringify({ ...data, country }),
       })
-      if (res.ok) router.push('/thank-you')
-      else setError('Something went wrong. Please try again.')
+      if (res.ok) {
+        router.push('/thank-you')
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
     } catch {
       setError('Something went wrong. Please try again.')
     }
@@ -59,32 +48,21 @@ export default function LeadFormSection() {
         <div className="text-center mb-16">
           <p className="text-[#B8924A] text-xs tracking-[0.4em] uppercase mb-6">Get In Touch</p>
           <h2 className="font-serif text-5xl text-white mb-6">Request Property Information</h2>
-          <p className="text-white/50">
-            Fill out the form and our team will reach out within 24 hours.
-          </p>
+          <p className="text-white/50 text-lg">Our team will reach out within 24 hours.</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div>
-            <input
-              {...register('name')}
-              placeholder="Your full name"
-              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all"
-            />
-            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
+            <input {...register('name')} placeholder="Your full name" className={inputClass} />
+            {errors.name && <p className={errorClass}>{errors.name.message}</p>}
           </div>
           <div>
-            <input
-              {...register('email')}
-              type="email"
-              placeholder="Your email address"
-              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all"
-            />
-            {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+            <input {...register('email')} type="email" placeholder="Your email address" className={inputClass} />
+            {errors.email && <p className={errorClass}>{errors.email.message}</p>}
           </div>
-          <div className="border-b border-white/20 pb-1">
+          <div className="border-b border-white/20 focus-within:border-[#B8924A] transition-all">
             <Controller
-              name="phone"
+              name="whatsapp"
               control={control}
               render={({ field }) => (
                 <PhoneInput
@@ -96,85 +74,47 @@ export default function LeadFormSection() {
                 />
               )}
             />
-            {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone.message}</p>}
+            {errors.whatsapp && <p className={errorClass}>{errors.whatsapp.message}</p>}
           </div>
           <div>
-            <select
-              {...register('interest')}
-              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white focus:outline-none focus:border-[#B8924A] transition-all"
-            >
-              <option value="" className="bg-[#2F4F3E]">Reason for interest</option>
-              <option value="retirement" className="bg-[#2F4F3E]">Retirement home</option>
-              <option value="vacation" className="bg-[#2F4F3E]">Vacation property</option>
+            <select {...register('interest_type')} className={selectClass}>
+              <option value="" className="bg-[#2F4F3E]">I am interested in...</option>
+              <option value="retirement" className="bg-[#2F4F3E]">Retirement Home</option>
+              <option value="vacation_home" className="bg-[#2F4F3E]">Vacation Property</option>
               <option value="investment" className="bg-[#2F4F3E]">Investment</option>
-              <option value="relocation" className="bg-[#2F4F3E]">Permanent relocation</option>
-              <option value="other" className="bg-[#2F4F3E]">Other</option>
+              <option value="relocation" className="bg-[#2F4F3E]">Permanent Relocation</option>
             </select>
-            {errors.interest && <p className="text-red-400 text-xs mt-1">{errors.interest.message}</p>}
-          </div>
-          <div>
-            <select
-              {...register('timeline')}
-              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white focus:outline-none focus:border-[#B8924A] transition-all"
-            >
-              <option value="" className="bg-[#2F4F3E]">Your timeline</option>
-              <option value="exploring" className="bg-[#2F4F3E]">Just exploring</option>
-              <option value="12months" className="bg-[#2F4F3E]">Within 12 months</option>
-              <option value="6months" className="bg-[#2F4F3E]">Within 6 months</option>
-              <option value="now" className="bg-[#2F4F3E]">Ready to act now</option>
-            </select>
-            {errors.timeline && <p className="text-red-400 text-xs mt-1">{errors.timeline.message}</p>}
+            {errors.interest_type && <p className={errorClass}>{errors.interest_type.message}</p>}
           </div>
           <div>
             <textarea
               {...register('message')}
-              placeholder="Any questions or comments? (optional)"
+              placeholder="Any questions? (optional)"
               rows={3}
-              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all resize-none"
+              className="w-full px-0 py-4 border-b border-white/20 bg-transparent text-white placeholder-white/30 focus:outline-none focus:border-[#B8924A] transition-all text-sm resize-none"
             />
           </div>
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && <p className={errorClass}>{error}</p>}
           <div className="pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#B8924A] text-white py-4 text-sm tracking-widest uppercase hover:bg-[#D4A96A] transition-all duration-300 disabled:opacity-60"
+              className="w-full bg-[#B8924A] text-white py-5 text-sm tracking-widest uppercase hover:bg-[#D4A96A] transition-all duration-300 disabled:opacity-60"
             >
-              {loading ? 'Sending...' : 'Request Information'}
+              {loading ? 'Sending...' : 'Request Property Information'}
             </button>
           </div>
-          <p className="text-center text-xs text-white/30">
-            No spam. No pressure. We will reach out personally.
-          </p>
+          <p className="text-center text-xs text-white/30">No spam. No pressure. We will reach out personally within 24 hours.</p>
         </form>
       </div>
 
       <style jsx global>{`
-        .phone-input-dark {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 16px 0;
-        }
-        .phone-input-dark .PhoneInputCountrySelect {
-          background: transparent;
-          border: none;
-          color: white;
-          font-size: 14px;
-          cursor: pointer;
-          outline: none;
-        }
-        .phone-input-dark .PhoneInputInput {
-          background: transparent;
-          border: none;
-          color: white;
-          font-size: 14px;
-          outline: none;
-          width: 100%;
-        }
-        .phone-input-dark .PhoneInputInput::placeholder {
-          color: rgba(255,255,255,0.3);
-        }
+        .phone-input-dark { display: flex; align-items: center; gap: 8px; padding: 16px 0; }
+        .phone-input-dark .PhoneInputCountrySelect { background: transparent; border: none; color: white; font-size: 14px; cursor: pointer; outline: none; }
+        .phone-input-dark .PhoneInputCountrySelect option { background-color: #2F4F3E; color: white; }
+        .phone-input-dark .PhoneInputInput { background: transparent; border: none; color: white; font-size: 14px; outline: none; width: 100%; }
+        .phone-input-dark .PhoneInputInput::placeholder { color: rgba(255,255,255,0.3); }
+        .phone-input-dark .PhoneInputCountrySelectArrow { color: rgba(255,255,255,0.4); }
       `}</style>
     </section>
   )

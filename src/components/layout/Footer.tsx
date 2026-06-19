@@ -17,7 +17,7 @@ export default function Footer() {
           <div>
             <p className="text-[#B8924A] text-xs tracking-widest uppercase mb-4">Contact</p>
             <a
-              href="https://wa.me/573152693434"
+              href="https://wa.me/573152693434?text=Hi%2C%20I%20just%20visited%20Tropical%20Roots%20and%20I%27m%20interested%20in%20learning%20more%20about%20Hacienda%20San%20Antonio.%20Could%20you%20please%20send%20me%20more%20information%3F"
               target="_blank"
               className="text-white/60 text-sm hover:text-[#B8924A] transition-colors"
             >
