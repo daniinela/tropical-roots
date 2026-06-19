@@ -28,7 +28,7 @@ export default function HeroSection() {
           Ginebra · Valle del Cauca · Colombia
         </p>
         <h1 className="font-serif text-6xl md:text-8xl text-white leading-none mb-8">
-          A Better Life<br />Begins Here.
+          A Slower Life<br />Begins Here.
         </h1>
         <p className="text-white/70 text-lg max-w-xl mx-auto mb-12 leading-relaxed">
           100 years of history. Surrounded by nature. Yours to own.
